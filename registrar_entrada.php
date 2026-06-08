@@ -1,13 +1,84 @@
 <?php
 session_start();
 include "validalogado.php";
+include "enviar_whatsapp.php";
 
-$matricula = $_SESSION['matricula'] ?? '---';
+$con = mysqli_connect("localhost","root","","bdifcataguases");
+
+if (!$con) {
+    die("Erro na conexão: " . mysqli_connect_error());
+}
+
+$matricula = $_SESSION['matricula'] ?? null;
+
+if (!$matricula) {
+    die("Matrícula não encontrada na sessão.");
+}
+
+$msg = "";
+
 $dataExibir = date("d/m/Y");
 $horaExibir = date("H:i:s");
+
+/* =========================
+   REGISTRO DE ENTRADA
+========================= */
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+    $dia = date("Y-m-d");
+    $entrada = date("H:i:s");
+
+    /* SALVAR NO BANCO */
+    $sql = "INSERT INTO entrada_saida(matricula, dia, entrada)
+            VALUES (?, ?, ?)";
+
+    $stmt = mysqli_prepare($con, $sql);
+    mysqli_stmt_bind_param($stmt, "sss", $matricula, $dia, $entrada);
+
+    if (mysqli_stmt_execute($stmt)) {
+
+        mysqli_stmt_close($stmt);
+
+        /* BUSCAR ALUNO + RESPONSÁVEL */
+        $sql2 = "
+        SELECT a.nome, r.numero
+        FROM alunos a
+        INNER JOIN responsaveis r
+        ON r.aluno = a.matricula
+        WHERE a.matricula = ?
+        ";
+
+        $stmt2 = mysqli_prepare($con, $sql2);
+        mysqli_stmt_bind_param($stmt2, "s", $matricula);
+        mysqli_stmt_execute($stmt2);
+
+        $result = mysqli_stmt_get_result($stmt2);
+
+        if ($row = mysqli_fetch_assoc($result)) {
+
+            $nome = $row['nome'];
+            $telefone = preg_replace('/\D/', '', $row['numero']);
+
+            if (!empty($telefone)) {
+
+                $mensagem =
+                    "📚 ENTRADA REGISTRADA\n\n" .
+                    "Aluno: $nome\n" .
+                    "Matrícula: $matricula\n" .
+                    "Data: $dia\n" .
+                    "Hora: $entrada";
+
+                enviarWhatsApp("55".$telefone, $mensagem);
+            }
+        }
+
+        $msg = "Entrada registrada com sucesso!";
+
+    } else {
+        $msg = "Erro ao registrar entrada.";
+    }
+}
 ?>
-
-
 <!DOCTYPE html>
 <html lang="pt">
 <head>
@@ -16,59 +87,59 @@ $horaExibir = date("H:i:s");
 <title>Sistema de Monitoramento</title>
 
 <style>
-    body {
-        margin: 0;
-        font-family: Arial, Helvetica, sans-serif;
-        background-color: #f7faf7;
-    }
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #f7faf7;
+}
 
-    .home {
-        text-align: center;
-        padding-top: 80px;
-    }
+.home {
+    text-align: center;
+    padding-top: 80px;
+}
 
-    .home h1 {
-        color: #3a5f3a;
-        font-weight: normal;
-        margin-bottom: 40px;
-    }
+.home h1 {
+    color: #3a5f3a;
+    font-weight: normal;
+    margin-bottom: 40px;
+}
 
-    .card {
-        background-color: #ffffff;
-        border: 1px solid #dce5dc;
-        border-radius: 8px;
-        padding: 20px;
-        width: 260px;
-        margin: 15px auto;
-        box-sizing: border-box;
-    }
+.card {
+    background-color: #ffffff;
+    border: 1px solid #dce5dc;
+    border-radius: 8px;
+    padding: 20px;
+    width: 260px;
+    margin: 15px auto;
+    box-sizing: border-box;
+}
 
-    p {
-        margin: 8px 0;
-        text-align: left;
-    }
+p {
+    margin: 8px 0;
+    text-align: left;
+}
 
-    input[type="submit"] {
-        background-color: #6fa96f;
-        color: white;
-        border: none;
-        padding: 10px;
-        width: 100%;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 15px;
-        margin-top: 15px;
-    }
+input[type="submit"] {
+    background-color: #6fa96f;
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 15px;
+    margin-top: 15px;
+}
 
-    input[type="submit"]:hover {
-        background-color: #5c915c;
-    }
+input[type="submit"]:hover {
+    background-color: #5c915c;
+}
 
-    .msg {
-        color: green;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
+.msg {
+    color: green;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
 </style>
 
 <script>
@@ -81,7 +152,6 @@ function atualizarRelogio() {
     document.getElementById("data").innerText = data;
     document.getElementById("hora").innerText = hora;
 
-    // 🔥 envia pro form também
     document.getElementById("inputData").value = data;
     document.getElementById("inputHora").value = hora;
 }
@@ -99,22 +169,23 @@ window.onload = atualizarRelogio;
 
     <div class="card">
 
-        <?php if(isset($msg)) echo "<div class='msg'>$msg</div>"; ?>
+        <?php if($msg) echo "<div class='msg'>$msg</div>"; ?>
 
-        <form method="POST" action="entrada.php">
+        <form method="POST" action="">
 
             <p><strong>Matrícula:</strong> <?php echo $matricula; ?></p>
             <p><strong>Data:</strong> <span id="data"><?php echo $dataExibir; ?></span></p>
             <p><strong>Hora:</strong> <span id="hora"><?php echo $horaExibir; ?></span></p>
 
-            <!-- 🔥 INPUTS OCULTOS (enviam os dados) -->
-            <input type="hidden" name="matricula" value="<?php echo $matricula; ?>">
             <input type="hidden" name="data" id="inputData">
             <input type="hidden" name="hora" id="inputHora">
 
             <input type="submit" value="Registrar Entrada">
 
         </form>
+<button class="btn-voltar" onclick="window.location.href='principalaluno.php'">
+Voltar
+</button>
 
     </div>
 </div>

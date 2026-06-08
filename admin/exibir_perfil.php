@@ -37,17 +37,7 @@ function buscarResponsavel($con, $cpf) {
     return mysqli_stmt_get_result($stmt)->fetch_assoc();
 }
 
-function resetarSenha($con, $tabela, $campo, $valor) {
-    $nova = substr(md5(time()), 0, 6);
-    $hash = password_hash($nova, PASSWORD_DEFAULT);
 
-    $sql = "UPDATE $tabela SET senha = ? WHERE $campo = ?";
-    $stmt = mysqli_prepare($con, $sql);
-    mysqli_stmt_bind_param($stmt, "ss", $hash, $valor);
-    mysqli_stmt_execute($stmt);
-
-    return $nova;
-}
 
 /* =========================
    EXECUÇÃO
@@ -205,13 +195,10 @@ input[type=submit]:hover {
 <?php if ($admin) { ?>
 <div class="result">
 <b>Login:</b> <?= $admin['login'] ?><br>
-<b>Hash:</b> <?= $admin['senha'] ?>
+<b>Senha:</b> <?= $admin['senha'] ?>
 </div>
 
-<form method="POST">
-<input type="hidden" name="login" value="<?= $admin['login'] ?>">
-<button class="reset" name="reset_admin">Resetar Senha</button>
-</form>
+
 <?php } ?>
 </div>
 
@@ -228,13 +215,10 @@ input[type=submit]:hover {
 <b>CPF:</b> <?= $responsavel['cpf'] ?><br>
 <b>Telefone:</b> <?= $responsavel['numero'] ?><br>
 <b>Aluno:</b> <?= $responsavel['aluno'] ?><br>
-<b>Hash:</b> <?= $responsavel['senha'] ?>
+<b>Senha:</b> <?= $responsavel['senha'] ?>
 </div>
 
-<form method="POST">
-<input type="hidden" name="cpf" value="<?= $responsavel['cpf'] ?>">
-<button class="reset" name="reset_resp">Resetar Senha</button>
-</form>
+
 <?php } ?>
 </div>
 

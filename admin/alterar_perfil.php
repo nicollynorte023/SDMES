@@ -50,7 +50,7 @@ function atualizarResponsavel($con, $cpf, $numero, $senha, $aluno) {
 
     $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
 
-    $sql = "UPDATE responsavel SET
+    $sql = "UPDATE responsaveis SET
             numero = ?,
             senha = ?,
             aluno = ?

@@ -1,12 +1,84 @@
 <?php
 session_start();
+include "validalogado.php";
+include "enviar_whatsapp.php";
 
-$matricula = $_SESSION['matricula'] ?? '---';
+$con = mysqli_connect("localhost","root","","bdifcataguases");
+
+if (!$con) {
+    die("Erro na conexão: " . mysqli_connect_error());
+}
+
+$matricula = $_SESSION['matricula'] ?? null;
+
+if (!$matricula) {
+    die("Matrícula não encontrada na sessão.");
+}
+
+$msg = "";
+
 $dataExibir = date("d/m/Y");
 $horaExibir = date("H:i:s");
-?>
-<?php
-include "validalogado.php";
+
+/* =========================
+   REGISTRO DE SAÍDA
+========================= */
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+    $dia = date("Y-m-d");
+    $saida = date("H:i:s");
+
+    /* SALVAR NO BANCO */
+    $sql = "UPDATE entrada_saida 
+            SET saida = ?
+            WHERE matricula = ? AND dia = ? AND saida IS NULL";
+
+    $stmt = mysqli_prepare($con, $sql);
+    mysqli_stmt_bind_param($stmt, "sss", $saida, $matricula, $dia);
+
+    if (mysqli_stmt_execute($stmt)) {
+
+        mysqli_stmt_close($stmt);
+
+        /* BUSCAR ALUNO + RESPONSÁVEL */
+        $sql2 = "
+        SELECT a.nome, r.numero
+        FROM alunos a
+        INNER JOIN responsaveis r
+        ON r.aluno = a.matricula
+        WHERE a.matricula = ?
+        ";
+
+        $stmt2 = mysqli_prepare($con, $sql2);
+        mysqli_stmt_bind_param($stmt2, "s", $matricula);
+        mysqli_stmt_execute($stmt2);
+
+        $result = mysqli_stmt_get_result($stmt2);
+
+        if ($row = mysqli_fetch_assoc($result)) {
+
+            $nome = $row['nome'];
+            $telefone = preg_replace('/\D/', '', $row['numero']);
+
+            if (!empty($telefone)) {
+
+                $mensagem =
+                    "🏠 SAÍDA REGISTRADA\n\n" .
+                    "Aluno: $nome\n" .
+                    "Matrícula: $matricula\n" .
+                    "Data: $dia\n" .
+                    "Hora: $saida";
+
+                enviarWhatsApp("55".$telefone, $mensagem);
+            }
+        }
+
+        $msg = "Saída registrada com sucesso!";
+
+    } else {
+        $msg = "Erro ao registrar saída.";
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -82,7 +154,6 @@ function atualizarRelogio() {
     document.getElementById("data").innerText = data;
     document.getElementById("hora").innerText = hora;
 
-    // envia pro form
     document.getElementById("inputData").value = data;
     document.getElementById("inputHora").value = hora;
 }
@@ -100,23 +171,23 @@ window.onload = atualizarRelogio;
 
     <div class="card">
 
-        <?php if(isset($msg)) echo "<div class='msg'>$msg</div>"; ?>
+        <?php if($msg) echo "<div class='msg'>$msg</div>"; ?>
 
-        <form method="POST" action="saida.php">
+        <form method="POST" action="">
 
             <p><strong>Matrícula:</strong> <?php echo $matricula; ?></p>
             <p><strong>Data:</strong> <span id="data"><?php echo $dataExibir; ?></span></p>
             <p><strong>Hora:</strong> <span id="hora"><?php echo $horaExibir; ?></span></p>
 
-            <!-- inputs ocultos -->
-            <input type="hidden" name="matricula" value="<?php echo $matricula; ?>">
             <input type="hidden" name="data" id="inputData">
             <input type="hidden" name="hora" id="inputHora">
 
             <input type="submit" value="Registrar Saída">
 
         </form>
-
+<button class="btn-voltar" onclick="window.location.href='principalaluno.php'">
+Voltar
+</button>
     </div>
 </div>
 
