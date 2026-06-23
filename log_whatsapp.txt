@@ -13,3 +13,7 @@
 16/06/2026 20:22:03 - {"sent":"true","message":"ok","id":11}
 23/06/2026 11:32:38 - {"error":"Your instance has been Stopped due to non-payment. you can activate this instance by extending your subscription. Payment information updates every 5 minutes."}
 23/06/2026 11:32:55 - {"error":"Your instance has been Stopped due to non-payment. you can activate this instance by extending your subscription. Payment information updates every 5 minutes."}
+23/06/2026 11:48:45 - {"error":"Your instance has been Stopped due to non-payment. you can activate this instance by extending your subscription. Payment information updates every 5 minutes."}
+23/06/2026 11:48:50 - {"error":"Your instance has been Stopped due to non-payment. you can activate this instance by extending your subscription. Payment information updates every 5 minutes."}
+23/06/2026 11:48:55 - {"error":"Your instance has been Stopped due to non-payment. you can activate this instance by extending your subscription. Payment information updates every 5 minutes."}
+23/06/2026 11:48:58 - {"error":"Your instance has been Stopped due to non-payment. you can activate this instance by extending your subscription. Payment information updates every 5 minutes."}
