@@ -1,272 +1,831 @@
 <?php
+
 session_start();
+
 include "../validalogado_adm.php";
 
-$con = mysqli_connect("localhost","root","","bdifcataguases");
 
-if (!$con) {
-    die("Erro na conexão: " . mysqli_connect_error());
+$con = mysqli_connect(
+    "localhost",
+    "root",
+    "",
+    "bdifcataguases"
+);
+
+
+if(!$con){
+
+    die("Erro na conexão: ".mysqli_connect_error());
+
 }
 
-$msg = "";
 
-/* =========================
-   FUNÇÕES
-========================= */
+$msg="";
+$dados=[];
+$listaAlunos=[];
+$tipo="";
 
-function atualizarAluno($con, $nome, $turma, $serie, $celular, $matricula, $senha) {
 
-    $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
 
-    $sql = "UPDATE alunos SET
-            nome = ?,
-            turma = ?,
-            serie = ?,
-            celularresponsavel = ?,
-            senha = ?
-            WHERE matricula = ?";
+/*
+=========================
+BUSCA
+=========================
+*/
 
-    $stmt = mysqli_prepare($con, $sql);
-    mysqli_stmt_bind_param($stmt, "ssssss", $nome, $turma, $serie, $celular, $senhaHash, $matricula);
 
-    return mysqli_stmt_execute($stmt);
-}
+if(isset($_POST['buscar'])){
 
-function atualizarAdmin($con, $login, $senha) {
 
-    $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
+    $tipo=$_POST['tipo'];
 
-    $sql = "UPDATE administrador SET
-            senha = ?
-            WHERE login = ?";
+    $valor=$_POST['buscar_valor'];
 
-    $stmt = mysqli_prepare($con, $sql);
-    mysqli_stmt_bind_param($stmt, "ss", $senhaHash, $login);
 
-    return mysqli_stmt_execute($stmt);
-}
 
-function atualizarResponsavel($con, $cpf, $numero, $senha, $aluno) {
+    if($tipo=="aluno"){
 
-    $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
 
-    $sql = "UPDATE responsavel SET
-            numero = ?,
-            senha = ?,
-            aluno = ?
-            WHERE cpf = ?";
+        $sql=mysqli_query(
 
-    $stmt = mysqli_prepare($con, $sql);
-    mysqli_stmt_bind_param($stmt, "ssss", $numero, $senhaHash, $aluno, $cpf);
+            $con,
 
-    return mysqli_stmt_execute($stmt);
-}
+            "SELECT *
+             FROM alunos
+             WHERE matricula='$valor'"
 
-/* =========================
-   EXECUÇÃO SEGURA
-========================= */
+        );
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-    // -------- ALUNO --------
-    if (isset($_POST['up_aluno'])) {
+        if(mysqli_num_rows($sql)>0){
 
-        $nome = $_POST['nome'] ?? '';
-        $turma = $_POST['turma'] ?? '';
-        $serie = $_POST['serie'] ?? '';
-        $celular = $_POST['celularresponsavel'] ?? '';
-        $matricula = $_POST['matricula'] ?? '';
-        $senha = $_POST['senha'] ?? '';
+            $dados=mysqli_fetch_assoc($sql);
 
-        if ($nome && $turma && $serie && $celular && $matricula && $senha) {
+        }else{
 
-            atualizarAluno($con, $nome, $turma, $serie, $celular, $matricula, $senha);
-            $msg = "Aluno atualizado com sucesso!";
+            $msg="Aluno não encontrado!";
 
-        } else {
-            $msg = "Preencha todos os campos do aluno!";
         }
+
+
     }
 
-    // -------- ADMIN --------
-    if (isset($_POST['up_admin'])) {
 
-        $login = $_POST['login'] ?? '';
-        $senha = $_POST['senha'] ?? '';
 
-        if ($login && $senha) {
 
-            atualizarAdmin($con, $login, $senha);
-            $msg = "Administrador atualizado com sucesso!";
 
-        } else {
-            $msg = "Preencha todos os campos do administrador!";
+    if($tipo=="admin"){
+
+
+        $sql=mysqli_query(
+
+            $con,
+
+            "SELECT *
+             FROM administrador
+             WHERE login='$valor'"
+
+        );
+
+
+        if(mysqli_num_rows($sql)>0){
+
+            $dados=mysqli_fetch_assoc($sql);
+
+        }else{
+
+            $msg="Administrador não encontrado!";
+
         }
+
+
     }
 
-    // -------- RESPONSÁVEL --------
-    if (isset($_POST['up_responsavel'])) {
 
-        $cpf = $_POST['cpf'] ?? '';
-        $numero = $_POST['numero'] ?? '';
-        $senha = $_POST['senha'] ?? '';
-        $aluno = $_POST['aluno'] ?? '';
 
-        if ($cpf && $numero && $senha && $aluno) {
 
-            atualizarResponsavel($con, $cpf, $numero, $senha, $aluno);
-            $msg = "Responsável atualizado com sucesso!";
 
-        } else {
-            $msg = "Preencha todos os campos do responsável!";
+    if($tipo=="responsavel"){
+
+
+
+        $sql=mysqli_query(
+
+            $con,
+
+            "SELECT *
+             FROM responsaveis
+             WHERE cpf='$valor'"
+
+        );
+
+
+
+        if(mysqli_num_rows($sql)>0){
+
+
+            $dados=mysqli_fetch_assoc($sql);
+
+
+
+            // busca todos os alunos desse responsável
+
+            $busca=mysqli_query(
+
+                $con,
+
+                "SELECT matricula,nome
+
+                 FROM alunos
+
+                 WHERE matricula IN
+
+                 (
+
+                    SELECT aluno
+
+                    FROM responsaveis
+
+                    WHERE cpf='$valor'
+
+                 )"
+
+            );
+
+
+
+            while($a=mysqli_fetch_assoc($busca)){
+
+
+                $listaAlunos[]=$a;
+
+
+            }
+
+
+
+        }else{
+
+
+            $msg="Responsável não encontrado!";
+
+
         }
+
+
     }
+
+
+
 }
+
+
+
+
+
+
+/*
+=========================
+SALVAR
+=========================
+*/
+
+
+if(isset($_POST['salvar'])){
+
+
+    $tipo=$_POST['tipo'];
+
+
+
+
+
+    /*
+    =====================
+    ALUNO
+    =====================
+    */
+
+
+    if($tipo=="aluno"){
+
+
+
+        $sql="
+
+        UPDATE alunos SET
+
+        nome=?,
+
+        turma=?,
+
+        serie=?,
+
+        celularresponsavel=?,
+
+        senha=?
+
+        WHERE matricula=?
+
+        ";
+
+
+
+        $stmt=mysqli_prepare($con,$sql);
+
+
+
+        mysqli_stmt_bind_param(
+
+            $stmt,
+
+            "ssssss",
+
+            $_POST['nome'],
+
+            $_POST['turma'],
+
+            $_POST['serie'],
+
+            $_POST['celular'],
+
+            $_POST['senha'],
+
+            $_POST['identificador']
+
+        );
+
+
+
+    }
+
+
+
+
+
+    /*
+    =====================
+    ADMIN
+    =====================
+    */
+
+
+    if($tipo=="admin"){
+
+
+
+        $sql="
+
+        UPDATE administrador SET
+
+        senha=?
+
+        WHERE login=?
+
+        ";
+
+
+
+        $stmt=mysqli_prepare($con,$sql);
+
+
+
+        mysqli_stmt_bind_param(
+
+            $stmt,
+
+            "ss",
+
+            $_POST['senha'],
+
+            $_POST['identificador']
+
+        );
+
+
+
+    }
+
+
+
+
+
+    /*
+    =====================
+    RESPONSAVEL
+    =====================
+    */
+
+
+    if($tipo=="responsavel"){
+
+
+
+        $cpf=$_POST['identificador'];
+
+        $aluno=$_POST['aluno'];
+
+
+
+
+        // CONFERE VÍNCULO
+
+        $verifica=mysqli_query(
+
+            $con,
+
+            "SELECT *
+
+             FROM responsaveis
+
+             WHERE cpf='$cpf'
+
+             AND aluno='$aluno'"
+
+        );
+
+
+
+
+        if(mysqli_num_rows($verifica)==0){
+
+
+            $msg="Esse aluno não pertence a esse responsável!";
+
+
+
+        }else{
+
+
+
+            $sql="
+
+            UPDATE responsaveis SET
+
+            numero=?,
+
+            senha=?
+
+            WHERE cpf=?
+
+            AND aluno=?
+
+            ";
+
+
+
+            $stmt=mysqli_prepare($con,$sql);
+
+
+
+            mysqli_stmt_bind_param(
+
+                $stmt,
+
+                "ssss",
+
+                $_POST['numero'],
+
+                $_POST['senha'],
+
+                $cpf,
+
+                $aluno
+
+            );
+
+
+
+        }
+
+
+
+    }
+
+
+
+
+
+    if(isset($stmt)){
+
+
+
+        if(mysqli_stmt_execute($stmt)){
+
+
+            $msg="Alterado com sucesso!";
+
+
+        }else{
+
+
+            $msg="Erro ao alterar: ".mysqli_error($con);
+
+
+        }
+
+
+    }
+
+
+
+}
+
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
+
 <meta charset="UTF-8">
+
 <title>Alterar Perfis</title>
 
+
 <style>
-body {
-    margin: 0;
-    font-family: Arial;
-    background: #f7faf7;
-    text-align: center;
+
+
+body{
+
+font-family:Arial;
+
+background:#f7faf7;
+
+text-align:center;
+
 }
 
-h2 {
-    color: #3a5f3a;
-    margin-top: 20px;
+
+
+.card{
+
+background:white;
+
+width:380px;
+
+margin:20px auto;
+
+padding:20px;
+
+border-radius:8px;
+
 }
 
-button {
-    background: #6fa96f;
-    color: white;
-    border: none;
-    padding: 10px;
-    width: 220px;
-    border-radius: 6px;
-    cursor: pointer;
-    margin: 10px;
+
+
+input,select{
+
+width:90%;
+
+padding:10px;
+
+margin:5px;
+
+border-radius:6px;
+
+border:1px solid #ccc;
+
 }
 
-button:hover {
-    background: #5c915c;
+
+
+button,
+input[type=submit]{
+
+
+background:#6fa96f;
+
+color:white;
+
+border:none;
+
+padding:10px;
+
+width:220px;
+
+border-radius:6px;
+
+cursor:pointer;
+
 }
 
-.voltar {
-    background: #a96f6f;
+
+
+button:hover,
+input[type=submit]:hover{
+
+background:#568756;
+
 }
 
-.voltar:hover {
-    background: #915c5c;
+
+
+.msg{
+
+color:green;
+
+font-weight:bold;
+
 }
 
-.card {
-    background: #fff;
-    border: 1px solid #dce5dc;
-    border-radius: 8px;
-    width: 380px;
-    margin: 15px auto;
-    padding: 20px;
-    display: none;
+
+
+.bloqueado{
+
+background:#ddd;
+
 }
 
-input {
-    width: 90%;
-    padding: 10px;
-    margin: 5px 0;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-}
 
-input[type=submit] {
-    width: 95%;
-    border: none;
-    background: #6fa96f;
-    color: white;
-    cursor: pointer;
-}
-
-input[type=submit]:hover {
-    background: #5c915c;
-}
-
-.msg {
-    color: green;
-    margin-top: 10px;
-}
 </style>
 
-<script>
-function mostrar(tipo) {
-    document.getElementById("aluno").style.display = "none";
-    document.getElementById("admin").style.display = "none";
-    document.getElementById("responsavel").style.display = "none";
 
-    document.getElementById(tipo).style.display = "block";
+
+<script>
+
+
+function trocar(){
+
+
+let tipo=document.getElementById("tipo").value;
+
+
+document.getElementById("busca").placeholder =
+
+tipo=="aluno"
+
+?
+
+"Matrícula"
+
+:
+
+tipo=="admin"
+
+?
+
+"Login"
+
+:
+
+"CPF";
+
+
 }
+
+
 </script>
+
 
 </head>
 
+
 <body>
+
+
 
 <h2>Alterar Perfis</h2>
 
-<button onclick="mostrar('aluno')">Alterar Aluno</button>
-<button onclick="mostrar('admin')">Alterar Admin</button>
-<button onclick="mostrar('responsavel')">Alterar Responsável</button>
 
-<?php if ($msg != "") { ?>
-    <div class="msg"><?= $msg ?></div>
+
+<?php if($msg!=""){ ?>
+
+<p class="msg">
+
+<?=$msg?>
+
+</p>
+
 <?php } ?>
 
-<!-- ALUNO -->
-<div class="card" id="aluno">
-    <h3>Aluno</h3>
-    <form method="POST">
-        <input type="text" name="matricula" placeholder="Matrícula" required>
-        <input type="text" name="nome" placeholder="Nome" required>
-        <input type="text" name="turma" placeholder="Turma" required>
-        <input type="text" name="serie" placeholder="Série" required>
-        <input type="text" name="celularresponsavel" placeholder="Celular Responsável" required>
-        <input type="password" name="senha" placeholder="Nova senha" required>
-        <input type="submit" name="up_aluno" value="Atualizar Aluno">
-    </form>
+
+
+
+
+<div class="card">
+
+
+<h3>Buscar</h3>
+
+
+<form method="POST">
+
+
+<select name="tipo" id="tipo" onchange="trocar()">
+
+
+
+<option value="aluno">
+Aluno - Matrícula
+</option>
+
+
+<option value="admin">
+Administrador - Login
+</option>
+
+
+<option value="responsavel">
+Responsável - CPF
+</option>
+
+
+</select>
+
+
+
+<input
+
+id="busca"
+
+name="buscar_valor"
+
+placeholder="Matrícula"
+
+required
+
+>
+
+
+<input
+
+type="submit"
+
+name="buscar"
+
+value="Buscar"
+
+>
+
+
+</form>
+
+
 </div>
 
-<!-- ADMIN -->
-<div class="card" id="admin">
-    <h3>Administrador</h3>
-    <form method="POST">
-        <input type="text" name="login" placeholder="Login" required>
-        <input type="password" name="senha" placeholder="Nova senha" required>
-        <input type="submit" name="up_admin" value="Atualizar Admin">
-    </form>
+
+
+
+
+
+
+<?php if(!empty($dados)){ ?>
+
+
+<div class="card">
+
+
+<h3>Editar</h3>
+
+
+
+<form method="POST">
+
+
+
+<input type="hidden" name="tipo" value="<?=$tipo?>">
+
+
+
+<input
+
+class="bloqueado"
+
+readonly
+
+name="identificador"
+
+value="<?=
+
+$tipo=="aluno"
+
+?
+
+$dados['matricula']
+
+:
+
+($tipo=="admin"
+
+?
+
+$dados['login']
+
+:
+
+$dados['cpf'])
+
+?>"
+
+>
+
+
+
+
+
+
+
+<?php if($tipo=="aluno"){ ?>
+
+
+<input name="nome" value="<?=$dados['nome']?>">
+
+<input name="turma" value="<?=$dados['turma']?>">
+
+<input name="serie" value="<?=$dados['serie']?>">
+
+<input name="celular" value="<?=$dados['celularresponsavel']?>">
+
+
+<?php } ?>
+
+
+
+
+
+
+
+<?php if($tipo=="responsavel"){ ?>
+
+
+<input name="numero" value="<?=$dados['numero']?>">
+
+
+
+<select name="aluno">
+
+
+<?php foreach($listaAlunos as $a){ ?>
+
+
+<option value="<?=$a['matricula']?>">
+
+<?=$a['matricula']?> - <?=$a['nome']?>
+
+</option>
+
+
+<?php } ?>
+
+
+</select>
+
+
+
+<?php } ?>
+
+
+
+
+
+<input
+
+type="password"
+
+name="senha"
+
+placeholder="Nova senha"
+
+required
+
+>
+
+
+
+<input
+
+type="submit"
+
+name="salvar"
+
+value="Salvar"
+
+>
+
+
+
+</form>
+
+
 </div>
 
-<!-- RESPONSAVEL -->
-<div class="card" id="responsavel">
-    <h3>Responsável</h3>
-    <form method="POST">
-        <input type="text" name="cpf" placeholder="CPF" required>
-        <input type="text" name="numero" placeholder="Telefone" required>
-        <input type="password" name="senha" placeholder="Nova senha" required>
-        <input type="text" name="aluno" placeholder="Matrícula do Aluno" required>
-        <input type="submit" name="up_responsavel" value="Atualizar Responsável">
-    </form>
-</div>
 
-<br><br>
+<?php } ?>
 
-<button class="voltar" onclick="window.location.href='../principaladm.php'">
+
+
+<br>
+
+
+<button onclick="window.location.href='../principaladm.php'">
+
 Voltar
+
 </button>
 
+
+
 </body>
+
 </html>

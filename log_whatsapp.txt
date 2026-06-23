@@ -1,0 +1,13 @@
+16/06/2026 18:56:12 - {"error":"Your instance has been Stopped due to non-payment. you can activate this instance by extending your subscription. Payment information updates every 5 minutes."}
+16/06/2026 19:00:31 - {"error":"Your instance has been Stopped due to non-payment. you can activate this instance by extending your subscription. Payment information updates every 5 minutes."}
+16/06/2026 19:04:46 - 
+16/06/2026 19:24:40 - {"sent":"true","message":"ok","id":3}
+16/06/2026 19:25:53 - {"sent":"true","message":"ok","id":4}
+16/06/2026 19:34:25 - {"sent":"true","message":"ok","id":5}
+16/06/2026 19:35:56 - {"sent":"true","message":"ok","id":6}
+16/06/2026 19:36:02 - {"sent":"true","message":"ok","id":7}
+16/06/2026 20:11:40 - {"sent":"true","message":"ok","id":8}
+16/06/2026 20:12:13 - error code: 520
+16/06/2026 20:12:23 - {"sent":"true","message":"ok","id":9}
+16/06/2026 20:12:35 - {"sent":"true","message":"ok","id":10}
+16/06/2026 20:22:03 - {"sent":"true","message":"ok","id":11}

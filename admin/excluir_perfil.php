@@ -1,212 +1,707 @@
 <?php
+
 session_start();
+
 include "../validalogado_adm.php";
 
-$con = mysqli_connect("localhost","root","","bdifcataguases");
 
-if (!$con) {
-    die("Erro na conexão com o banco.");
+$con = mysqli_connect(
+    "localhost",
+    "root",
+    "",
+    "bdifcataguases"
+);
+
+
+if(!$con){
+
+    die("Erro na conexão");
+
 }
 
-/* =========================
-   FUNÇÕES SEGURAS
-========================= */
 
-function deletarAluno($con, $matricula) {
+$msg="";
+$listaAlunos=[];
 
-    $sql = "DELETE FROM alunos WHERE matricula = ?";
-    $stmt = mysqli_prepare($con, $sql);
-    mysqli_stmt_bind_param($stmt, "s", $matricula);
+
+
+/*
+=========================
+FUNÇÕES
+=========================
+*/
+
+
+function deletarAluno($con,$matricula){
+
+    $sql="
+    DELETE FROM alunos
+    WHERE matricula=?
+    ";
+
+    $stmt=mysqli_prepare($con,$sql);
+
+    mysqli_stmt_bind_param(
+        $stmt,
+        "s",
+        $matricula
+    );
 
     return mysqli_stmt_execute($stmt);
+
 }
 
-function deletarAdmin($con, $login) {
 
-    $sql = "DELETE FROM administrador WHERE login = ?";
-    $stmt = mysqli_prepare($con, $sql);
-    mysqli_stmt_bind_param($stmt, "s", $login);
+
+
+
+function deletarAdmin($con,$login){
+
+    $sql="
+    DELETE FROM administrador
+    WHERE login=?
+    ";
+
+    $stmt=mysqli_prepare($con,$sql);
+
+    mysqli_stmt_bind_param(
+        $stmt,
+        "s",
+        $login
+    );
 
     return mysqli_stmt_execute($stmt);
+
 }
 
-function deletarResponsavel($con, $cpf) {
 
-    $sql = "DELETE FROM responsaveis WHERE cpf = ?";
-    $stmt = mysqli_prepare($con, $sql);
-    mysqli_stmt_bind_param($stmt, "s", $cpf);
+
+
+
+function buscarResponsavel($con,$cpf){
+
+
+    $sql="
+    SELECT cpf,numero,aluno
+    FROM responsaveis
+    WHERE cpf=?
+    ";
+
+
+    $stmt=mysqli_prepare($con,$sql);
+
+
+    mysqli_stmt_bind_param(
+        $stmt,
+        "s",
+        $cpf
+    );
+
+
+    mysqli_stmt_execute($stmt);
+
+
+    return mysqli_stmt_get_result($stmt)->fetch_assoc();
+
+}
+
+
+
+
+
+function buscarAlunos($con,$matriculas){
+
+
+    $lista=[];
+
+
+    foreach($matriculas as $matricula){
+
+
+        $sql="
+        SELECT matricula,nome
+        FROM alunos
+        WHERE matricula=?
+        ";
+
+
+        $stmt=mysqli_prepare($con,$sql);
+
+
+        mysqli_stmt_bind_param(
+            $stmt,
+            "s",
+            $matricula
+        );
+
+
+        mysqli_stmt_execute($stmt);
+
+
+
+        $resultado=mysqli_stmt_get_result($stmt);
+
+
+
+        if($a=mysqli_fetch_assoc($resultado)){
+
+
+            $lista[]=$a;
+
+
+        }
+
+
+    }
+
+
+    return $lista;
+
+}
+
+
+
+
+
+
+
+function removerAlunoResponsavel($con,$cpf,$matricula){
+
+
+    // BUSCA SOMENTE O CPF INFORMADO
+
+    $sql="
+    SELECT aluno
+    FROM responsaveis
+    WHERE cpf=?
+    ";
+
+
+    $stmt=mysqli_prepare($con,$sql);
+
+
+    mysqli_stmt_bind_param(
+        $stmt,
+        "s",
+        $cpf
+    );
+
+
+    mysqli_stmt_execute($stmt);
+
+
+    $resultado=mysqli_stmt_get_result($stmt);
+
+
+
+    if(mysqli_num_rows($resultado)==0){
+
+        return false;
+
+    }
+
+
+
+    $dados=mysqli_fetch_assoc($resultado);
+
+
+
+    $alunos=explode(
+        ",",
+        $dados['aluno']
+    );
+
+
+
+    $novo=[];
+
+
+
+    foreach($alunos as $a){
+
+
+        if(trim($a)!=$matricula){
+
+
+            $novo[]=$a;
+
+
+        }
+
+
+    }
+
+
+
+
+
+    // SE ERA O ÚLTIMO ALUNO APAGA SOMENTE ESSE RESPONSÁVEL
+
+    if(count($novo)==0){
+
+
+        $sql="
+        DELETE FROM responsaveis
+        WHERE cpf=?
+        ";
+
+
+        $stmt=mysqli_prepare($con,$sql);
+
+
+        mysqli_stmt_bind_param(
+            $stmt,
+            "s",
+            $cpf
+        );
+
+
+        return mysqli_stmt_execute($stmt);
+
+
+    }
+
+
+
+
+
+
+    // SENÃO ATUALIZA SOMENTE ESSE CPF
+
+
+    $novoCampo=implode(
+        ",",
+        $novo
+    );
+
+
+
+    $sql="
+    UPDATE responsaveis
+    SET aluno=?
+    WHERE cpf=?
+    ";
+
+
+
+    $stmt=mysqli_prepare($con,$sql);
+
+
+
+    mysqli_stmt_bind_param(
+        $stmt,
+        "ss",
+        $novoCampo,
+        $cpf
+    );
+
+
 
     return mysqli_stmt_execute($stmt);
+
+
 }
 
-/* =========================
-   EXECUÇÃO
-========================= */
 
-$msg = "";
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
-    if (isset($_POST['del_aluno'])) {
-        if (deletarAluno($con, $_POST['matricula'])) {
-            $msg = "Aluno deletado com sucesso!";
-        } else {
-            $msg = "Erro ao deletar aluno!";
+
+
+/*
+=========================
+EXECUÇÃO
+=========================
+*/
+
+
+if($_SERVER["REQUEST_METHOD"]=="POST"){
+
+
+
+    if(isset($_POST['del_aluno'])){
+
+
+        if(deletarAluno(
+            $con,
+            $_POST['matricula']
+        )){
+
+            $msg="Aluno deletado!";
+
+        }else{
+
+            $msg="Erro ao deletar aluno";
+
         }
+
+
     }
 
-    if (isset($_POST['del_admin'])) {
-        if (deletarAdmin($con, $_POST['login'])) {
-            $msg = "Administrador deletado com sucesso!";
-        } else {
-            $msg = "Erro ao deletar administrador!";
+
+
+
+
+
+    if(isset($_POST['del_admin'])){
+
+
+        if(deletarAdmin(
+            $con,
+            $_POST['login']
+        )){
+
+            $msg="Administrador deletado!";
+
+        }else{
+
+            $msg="Erro ao deletar administrador";
+
         }
+
+
     }
 
-    if (isset($_POST['del_responsavel'])) {
-        if (deletarResponsavel($con, $_POST['cpf'])) {
-            $msg = "Responsável deletado com sucesso!";
-        } else {
-            $msg = "Erro ao deletar responsável!";
+
+
+
+
+
+
+    if(isset($_POST['buscar_resp'])){
+
+
+        $resp=buscarResponsavel(
+            $con,
+            $_POST['cpf']
+        );
+
+
+
+        if($resp){
+
+
+            $matriculas=explode(
+                ",",
+                $resp['aluno']
+            );
+
+
+            $listaAlunos=buscarAlunos(
+                $con,
+                $matriculas
+            );
+
+
+        }else{
+
+
+            $msg="CPF não encontrado";
+
+
         }
+
+
     }
+
+
+
+
+
+
+
+    if(isset($_POST['del_resp'])){
+
+
+        if(removerAlunoResponsavel(
+            $con,
+            $_POST['cpf'],
+            $_POST['matricula']
+        )){
+
+
+            $msg="Vínculo removido corretamente!";
+
+
+        }else{
+
+
+            $msg="Erro ao remover vínculo";
+
+
+        }
+
+
+    }
+
+
+
 }
+
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
+
 <meta charset="UTF-8">
-<title>Deletar Perfil</title>
+
+<title>Deletar Perfis</title>
+
 
 <style>
-body {
-    margin: 0;
-    font-family: Arial;
-    background: #f7faf7;
-    text-align: center;
+
+
+body{
+
+font-family:Arial;
+background:#f7faf7;
+text-align:center;
+
 }
 
-h2 {
-    color: #3a5f3a;
-    margin-top: 20px;
+
+
+.card{
+
+background:white;
+width:350px;
+margin:20px auto;
+padding:20px;
+border-radius:8px;
+
 }
 
-button {
-    background: #6fa96f;
-    color: white;
-    border: none;
-    padding: 10px;
-    width: 220px;
-    border-radius: 6px;
-    cursor: pointer;
-    margin: 10px;
+
+
+input,select{
+
+width:90%;
+padding:10px;
+margin:5px;
+
 }
 
-button:hover {
-    background: #5c915c;
+
+
+input[type=submit],button{
+
+
+background:#a96f6f;
+color:white;
+border:0;
+padding:10px;
+width:220px;
+border-radius:6px;
+cursor:pointer;
+
+
 }
 
-.voltar {
-    background: #a96f6f;
+
+
+.msg{
+
+color:green;
+font-weight:bold;
+
 }
 
-.voltar:hover {
-    background: #915c5c;
-}
 
-.card {
-    background: #fff;
-    border: 1px solid #dce5dc;
-    border-radius: 8px;
-    width: 350px;
-    margin: 15px auto;
-    padding: 20px;
-    display: none;
-}
-
-input {
-    width: 90%;
-    padding: 10px;
-    margin: 5px 0;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-}
-
-input[type=submit] {
-    width: 95%;
-    border: none;
-    background: #a96f6f;
-    color: white;
-    cursor: pointer;
-}
-
-input[type=submit]:hover {
-    background: #915c5c;
-}
-
-.msg {
-    color: green;
-    margin-top: 10px;
-}
 </style>
 
-<script>
-function mostrar(tipo) {
-    document.getElementById("aluno").style.display = "none";
-    document.getElementById("admin").style.display = "none";
-    document.getElementById("responsavel").style.display = "none";
-
-    document.getElementById(tipo).style.display = "block";
-}
-</script>
 
 </head>
 
+
 <body>
+
 
 <h2>Deletar Perfis</h2>
 
-<button onclick="mostrar('aluno')">Deletar Aluno</button>
-<button onclick="mostrar('admin')">Deletar Admin</button>
-<button onclick="mostrar('responsavel')">Deletar Responsável</button>
 
-<?php if ($msg != "") { ?>
-    <div class="msg"><?= $msg ?></div>
+
+<?php if($msg!=""){ ?>
+
+<div class="msg">
+
+<?=$msg?>
+
+</div>
+
 <?php } ?>
 
-<!-- ALUNO -->
-<div class="card" id="aluno">
-    <h3>Aluno</h3>
-    <form method="POST">
-        <input type="text" name="matricula" placeholder="Matrícula do Aluno" required>
-        <input type="submit" name="del_aluno" value="Deletar Aluno">
-    </form>
+
+
+
+
+<div class="card">
+
+<h3>Deletar Aluno</h3>
+
+
+<form method="POST">
+
+
+<input
+name="matricula"
+placeholder="Matrícula">
+
+
+<input
+type="submit"
+name="del_aluno"
+value="Deletar">
+
+
+</form>
+
+
 </div>
 
-<!-- ADMIN -->
-<div class="card" id="admin">
-    <h3>Administrador</h3>
-    <form method="POST">
-        <input type="text" name="login" placeholder="Login do Admin" required>
-        <input type="submit" name="del_admin" value="Deletar Admin">
-    </form>
+
+
+
+
+
+
+<div class="card">
+
+<h3>Deletar Administrador</h3>
+
+
+<form method="POST">
+
+
+<input
+name="login"
+placeholder="Login">
+
+
+<input
+type="submit"
+name="del_admin"
+value="Deletar">
+
+
+</form>
+
+
 </div>
 
-<!-- RESPONSAVEL -->
-<div class="card" id="responsavel">
-    <h3>Responsável</h3>
-    <form method="POST">
-        <input type="text" name="cpf" placeholder="CPF do Responsável" required>
-        <input type="submit" name="del_responsavel" value="Deletar Responsável">
-    </form>
+
+
+
+
+
+
+
+<div class="card">
+
+<h3>Buscar Responsável</h3>
+
+
+<form method="POST">
+
+
+<input
+name="cpf"
+placeholder="CPF">
+
+
+<input
+type="submit"
+name="buscar_resp"
+value="Buscar">
+
+
+</form>
+
+
 </div>
 
-<br><br>
 
-<button class="voltar" onclick="window.location.href='../principaladm.php'">
-Voltar 
+
+
+
+
+
+<?php if(!empty($listaAlunos)){ ?>
+
+
+<div class="card">
+
+
+<h3>Alunos vinculados</h3>
+
+
+
+<form method="POST">
+
+
+<input
+type="hidden"
+name="cpf"
+value="<?= $_POST['cpf'] ?>"
+>
+
+
+<select name="matricula">
+
+
+<?php foreach($listaAlunos as $a){ ?>
+
+
+<option value="<?=$a['matricula']?>">
+
+
+<?=$a['matricula']?> - <?=$a['nome']?>
+
+
+</option>
+
+
+<?php } ?>
+
+
+</select>
+
+
+
+<br>
+
+
+<input
+type="submit"
+name="del_resp"
+value="Remover aluno">
+
+
+</form>
+
+
+
+</div>
+
+
+
+<?php } ?>
+
+
+
+
+
+<br>
+
+
+<button onclick="window.location.href='../principaladm.php'">
+
+Voltar
+
 </button>
 
+
+
 </body>
+
 </html>

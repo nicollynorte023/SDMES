@@ -1,72 +1,269 @@
-
 <?php
+
 session_start();
 
-// 🔒 verifica login
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+
+require_once "enviar_whatsapp.php";
+
+
+// Verifica login
 if (!isset($_SESSION['matricula'])) {
+
     header("Location: loginaluno_principal.php");
     exit();
+
 }
 
-// conexão
-$con = mysqli_connect("localhost", "root", "", "bdifcataguases");
+
+// Conexão banco
+$con = mysqli_connect(
+    "localhost",
+    "root",
+    "",
+    "bdifcataguases"
+);
+
 
 if (!$con) {
+
     die("Erro na conexão: " . mysqli_connect_error());
+
 }
 
-// fuso horário
+
 date_default_timezone_set('America/Sao_Paulo');
 
-// dados do usuário
-$matricula = $_SESSION['matricula'];
 
-// 🔥 quando clicar no botão
+$matricula = mysqli_real_escape_string(
+    $con,
+    $_SESSION['matricula']
+);
+
+
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
 
     $hora = date("H:i:s");
     $data = date("Y-m-d");
 
-    // verifica se já existe entrada aberta
-    $verifica = "SELECT * FROM entrada_saida 
-                 WHERE matricula = '$matricula' 
-                 AND saida IS NULL";
 
-    $res = mysqli_query($con, $verifica);
 
-    if (mysqli_num_rows($res) > 0) {
+    // Verifica entrada aberta
 
-        // já tem entrada aberta
-        $_SESSION['msg'] = "Você já possui uma entrada em aberto!";
+    $verifica = mysqli_query(
+        $con,
+
+        "
+        SELECT *
+        FROM entrada_saida
+        WHERE matricula = '$matricula'
+        AND saida IS NULL
+        LIMIT 1
+        "
+    );
+
+
+
+    if (!$verifica) {
+
+
+        $_SESSION['msg'] =
+        "Erro ao verificar entrada: "
+        . mysqli_error($con);
+
+
         $_SESSION['tipo'] = "erro";
 
-        header("Location: principalaluno.php");
-        exit();
+
+
+    } elseif (mysqli_num_rows($verifica) > 0) {
+
+
+
+        $_SESSION['msg'] =
+        "Você já possui uma entrada em aberto!";
+
+
+        $_SESSION['tipo'] = "erro";
+
+
 
     } else {
 
-        // registra entrada
-        $sql = "INSERT INTO entrada_saida (entrada, saida, matricula, dia)
-                VALUES ('$hora', NULL, '$matricula', '$data')";
+
+
+        // Cadastra entrada
+
+        $sql = "
+
+        INSERT INTO entrada_saida
+
+        (
+            entrada,
+            saida,
+            matricula,
+            dia
+        )
+
+        VALUES
+
+        (
+            '$hora',
+            NULL,
+            '$matricula',
+            '$data'
+        )
+
+        ";
+
+
 
         if (mysqli_query($con, $sql)) {
 
-            // sucesso
-            $_SESSION['msg'] = "Entrada registrada com sucesso!";
+
+
+            // Busca aluno para enviar WhatsApp
+
+            $busca = mysqli_query(
+
+                $con,
+
+                "
+                SELECT nome, celularresponsavel
+                FROM alunos
+                WHERE matricula='$matricula'
+                LIMIT 1
+                "
+
+            );
+
+
+
+            if ($busca && mysqli_num_rows($busca) > 0) {
+
+
+
+                $aluno = mysqli_fetch_assoc($busca);
+
+
+
+                $nome = $aluno['nome'];
+
+
+
+                $telefone = preg_replace(
+
+                    '/[^0-9]/',
+
+                    '',
+
+                    $aluno['celularresponsavel']
+
+                );
+
+
+
+                // adiciona Brasil
+
+                if(strlen($telefone)==11){
+
+                    $telefone = "55".$telefone;
+
+                }
+
+
+
+
+                if(!empty($telefone)){
+
+
+
+                    $mensagem =
+
+                    "Olá $nome, sua entrada foi registrada às $hora.";
+
+
+
+                    $retorno = enviarWhatsApp(
+
+                        $telefone,
+
+                        $mensagem
+
+                    );
+
+
+
+                    file_put_contents(
+
+                        "log_whatsapp.txt",
+
+                        date("d/m/Y H:i:s")
+                        ." - "
+                        .$retorno
+                        .PHP_EOL,
+
+                        FILE_APPEND
+
+                    );
+
+
+                }
+
+
+
+            }
+
+
+
+
+
+            $_SESSION['msg'] =
+
+            "Entrada registrada com sucesso!";
+
+
             $_SESSION['tipo'] = "sucesso";
 
-            header("Location: principalaluno.php");
-            exit();
+
 
         } else {
 
-            // erro banco
-            $_SESSION['msg'] = "Erro no banco: " . mysqli_error($con);
+
+
+            $_SESSION['msg'] =
+
+            "Erro ao registrar entrada: "
+            . mysqli_error($con);
+
+
             $_SESSION['tipo'] = "erro";
 
-            header("Location: principalaluno.php");
-            exit();
+
+
         }
+
+
+
     }
+
+
+
+
+    mysqli_close($con);
+
+
+
+    header("Location: principalaluno.php");
+
+    exit();
+
+
+
 }
+
 ?>
