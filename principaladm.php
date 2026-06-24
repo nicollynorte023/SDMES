@@ -1,107 +1,210 @@
 <?php
 include("validalogado_adm.php");
+
+$con = mysqli_connect("localhost","root","","bdifcataguases");
+
+if(!$con){
+    die("Erro na conexão: " . mysqli_connect_error());
+}
+
+$tipo = $_GET['tipo'] ?? 'aluno';
+
+$alunos = mysqli_query($con,"SELECT matricula, nome FROM alunos");
+$admins = mysqli_query($con,"SELECT login, senha FROM administrador");
+$responsaveis = mysqli_query($con,"SELECT id, cpf, numero, aluno FROM responsaveis");
 ?>
 
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Painel do Administrador</title>
+<title>Painel Admin</title>
 
 <style>
-    body {
-        margin: 0;
-        font-family: Arial, Helvetica, sans-serif;
-        background-color: #f7faf7; /* mesma base do seu sistema */
-    }
+body{margin:0;font-family:Arial;display:flex;background:#f7faf7;}
 
-    .home {
-        text-align: center;
-        padding-top: 80px;
-    }
+.sidebar{
+    width:220px;height:100vh;background:#3a5f3a;
+    position:fixed;padding-top:20px;
+}
 
-    .home h1 {
-        color: #3a5f3a;
-        font-weight: normal;
-        margin-bottom: 40px;
-    }
+.sidebar a{
+    display:block;padding:15px;color:white;
+    text-decoration:none;font-weight:bold;
+}
 
-    .card {
-        background-color: #ffffff;
-        border: 1px solid #dce5dc;
-        border-radius: 8px;
-        padding: 20px;
-        width: 240px;
-        margin: 15px auto;
-        box-sizing: border-box;
-    }
+.sidebar a:hover{background:#2f4d2f;}
+.active{background:#2f4d2f;}
 
-    button {
-        background-color: #6fa96f; /* verde padrão do seu sistema */
-        color: white;
-        border: none;
-        padding: 10px;
-        width: 100%;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 15px;
-    }
+.content{
+    margin-left:220px;width:100%;padding:20px;
+}
 
-    button:hover {
-        background-color: #5c915c;
-    }
+h1{color:#3a5f3a;}
 
-    .logout button {
-        background-color: #a96f6f; /* vermelho suave para logout */
-    }
+.btn{
+    display:inline-block;
+    padding:6px 10px;
+    border-radius:4px;
+    color:white;
+    font-size:12px;
+    text-decoration:none;
+    margin-right:5px;
+}
 
-    .logout button:hover {
-        background-color: #915c5c;
-    }
+.editar{background:#6fa96f;}
+.excluir{background:#a96f6f;}
+.cadastrar{background:#3a5f3a;}
+.exibir{background:#4f6fa9;}
+.entrada{background:#a97f3a;}
+
+table{
+    width:100%;
+    background:white;
+    border-collapse:collapse;
+    margin-top:15px;
+}
+
+th,td{border:1px solid #ccc;padding:10px;}
+th{background:#6fa96f;color:white;}
 </style>
 </head>
 
 <body>
 
-<div class="home">
-    <h1>Painel do Administrador</h1>
+<!-- SIDEBAR -->
+<div class="sidebar">
+    <a href="?tipo=aluno" class="<?= $tipo=='aluno'?'active':'' ?>">ALUNO</a>
+    <a href="?tipo=admin" class="<?= $tipo=='admin'?'active':'' ?>">ADMINISTRADOR</a>
+    <a href="?tipo=resp" class="<?= $tipo=='resp'?'active':'' ?>">RESPONSÁVEL</a>
+    <a href="logout.php" ?>SAIR</a>
+
+</div>
+
+<!-- CONTEÚDO -->
+<div class="content">
+
+<h1>PAINEL ADMINISTRATIVO</h1>
+
+<!-- BOTÕES PRINCIPAIS -->
+<a class="btn cadastrar" href="admin/adicionar_perfil.php?tipo=<?= $tipo ?>">
++ CADASTRAR
+</a>
 
 
-    <div class="card">
-        <button onclick="location.href='admin/exibir_perfil.php'">
-            Exibir Perfil
-        </button>
-    </div>
+<!-- ================= ALUNO ================= -->
+<?php if($tipo=='aluno'){ ?>
 
-    <div class="card">
-        <button onclick="location.href='admin/adicionar_perfil.php'">
-            Adicionar Perfil
-        </button>
-    </div>
+<table>
+<tr><th>Matrícula</th><th>Nome</th><th>Ações</th></tr>
 
-    <div class="card">
-        <button onclick="location.href='admin/excluir_perfil.php'">
-            Deletar Perfil
-        </button>
-    </div>
+<?php while($a=mysqli_fetch_assoc($alunos)){
+$mat = $a['matricula'] ?? '';
+$nome = $a['nome'] ?? '';
+?>
+<tr>
+<td><?= $mat ?></td>
+<td><?= $nome ?></td>
+<td>
+<a class="btn entrada" href="admin/entradasaida.php?matricula=<?= urlencode($mat) ?>">
+ENTRADA / SAÍDA
+</a>
+<a class="btn exibir"
+href="admin/exibir_perfil.php?tipo=aluno&matricula=<?= urlencode($mat) ?>">
+Exibir
+</a>
 
-    <div class="card">
-        <button onclick="location.href='admin/alterar_perfil.php'">
-            Atualizar Dados de Perfil
-        </button>
-    </div>
+<a class="btn editar"
+href="admin/alterar_perfil.php?tipo=aluno&matricula=<?= urlencode($mat) ?>">
+Editar
+</a>
 
-    <div class="card">
-        <button onclick="location.href='admin/entradasaida.php'">
-            Visualizar Entrada/Saída do aluno
-        </button>
-    </div>
+<a class="btn excluir"
+href="admin/excluir_perfil.php?tipo=aluno&chave=<?= urlencode($mat) ?>">
+Excluir
+</a>
 
-    <div class="card logout">
-        <button onclick="location.href='logout.php'">
-            Logout
-        </button>
-    </div>
+</td>
+</tr>
+<?php } ?>
+</table>
+<?php } ?>
+
+<!-- ================= ADMIN ================= -->
+<?php if($tipo=='admin'){ ?>
+<table>
+<tr><th>Login</th><th>Senha</th><th>Ações</th></tr>
+
+<?php while($a=mysqli_fetch_assoc($admins)){
+$login = $a['login'] ?? '';
+$senha = $a['senha'] ?? '';
+?>
+<tr>
+<td><?= $login ?></td>
+<td><?= $senha ?></td>
+<td>
+
+<a class="btn exibir"
+href="admin/exibir_perfil.php?tipo=admin&login=<?= urlencode($login) ?>">
+Exibir
+</a>
+
+<a class="btn editar"
+href="admin/alterar_perfil.php?tipo=admin&login=<?= urlencode($login) ?>">
+Editar
+</a>
+
+<a class="btn excluir"
+href="admin/excluir_perfil.php?tipo=admin&chave=<?= urlencode($login) ?>">
+Excluir
+</a>
+
+</td>
+</tr>
+<?php } ?>
+</table>
+<?php } ?>
+
+<!-- ================= RESPONSÁVEL ================= -->
+<?php if($tipo=='resp'){ ?>
+<table>
+<tr><th>ID</th><th>CPF</th><th>Telefone</th><th>Aluno</th><th>Ações</th></tr>
+
+<?php while($r=mysqli_fetch_assoc($responsaveis)){
+$id = $r['id'] ?? '';
+$cpf = $r['cpf'] ?? '';
+$num = $r['numero'] ?? '';
+$aluno = $r['aluno'] ?? '';
+?>
+<tr>
+<td><?= $id ?></td>
+<td><?= $cpf ?></td>
+<td><?= $num ?></td>
+<td><?= $aluno ?></td>
+<td>
+
+<a class="btn exibir"
+href="admin/exibir_perfil.php?tipo=resp&id=<?= $r['id'] ?>">
+Exibir
+</a>
+
+<a class="btn editar"
+href="admin/alterar_perfil.php?tipo=resp&id=<?= $r['id'] ?>">
+Editar
+</a>
+
+<a class="btn excluir"
+href="admin/excluir_perfil.php?tipo=resp&chave=<?= $r['id'] ?>"
+onclick="return confirm('Deseja excluir este responsável?')">
+Excluir
+</a>
+
+</td>
+</tr>
+<?php } ?>
+</table>
+<?php } ?>
+
 </div>
 
 </body>

@@ -45,7 +45,7 @@ if(mysqli_num_rows($busca) > 0){
     $tel = preg_replace('/[^0-9]/','',$aluno['celularresponsavel']);
     if(strlen($tel)==11) $tel="55".$tel;
 
-    enviarWhatsApp($tel,"Saída registrada às $hora");
+    enviarWhatsApp($tel,"Saída registrada de " . $aluno['nome'] . "  às $hora");
 }
 
 header("Location: principalaluno.php");

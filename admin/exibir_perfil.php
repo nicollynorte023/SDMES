@@ -181,88 +181,76 @@ function buscarAlunosVinculados($con,$lista){
 
 /*
 =========================
-BUSCAS
+BUSCA DIRETA
 =========================
 */
 
+$tipo = $_GET['tipo'] ?? '';
 
-if($_SERVER["REQUEST_METHOD"]=="POST"){
+if($tipo == 'aluno' && isset($_GET['matricula'])){
 
+    $aluno = buscarAluno(
+        $con,
+        $_GET['matricula']
+    );
 
-
-    if(isset($_POST['buscar_aluno'])){
-
-
-        $aluno=buscarAluno(
-            $con,
-            $_POST['matricula']
-        );
-
-
+    if(!$aluno){
+        $msg = "Aluno não encontrado!";
     }
-
-
-
-    if(isset($_POST['buscar_admin'])){
-
-
-        $admin=buscarAdmin(
-            $con,
-            $_POST['login']
-        );
-
-
-    }
-
-
-
-    if(isset($_POST['buscar_responsavel'])){
-
-
-        $responsavel=buscarResponsavel(
-            $con,
-            $_POST['cpf']
-        );
-
-
-
-        if($responsavel){
-
-
-
-            $matriculas=explode(
-                ",",
-                $responsavel['aluno']
-            );
-
-
-
-            $alunosVinculados=
-            buscarAlunosVinculados(
-                $con,
-                $matriculas
-            );
-
-
-        }
-        else{
-
-
-            $msg="Responsável não encontrado!";
-
-
-        }
-
-
-    }
-
-
 }
 
+if($tipo == 'admin' && isset($_GET['login'])){
+
+    $admin = buscarAdmin(
+        $con,
+        $_GET['login']
+    );
+
+    if(!$admin){
+        $msg = "Administrador não encontrado!";
+    }
+}
+
+if($tipo == 'resp' && isset($_GET['id'])){
+
+    $id = $_GET['id'];
+
+    $stmt = mysqli_prepare(
+        $con,
+        "SELECT * FROM responsaveis WHERE id = ?"
+    );
+
+    mysqli_stmt_bind_param(
+        $stmt,
+        "i",
+        $id
+    );
+
+    mysqli_stmt_execute($stmt);
+
+    $responsavel =
+    mysqli_stmt_get_result($stmt)->fetch_assoc();
+
+    if($responsavel){
+
+        $matriculas = explode(
+            ",",
+            $responsavel['aluno']
+        );
+
+        $alunosVinculados =
+        buscarAlunosVinculados(
+            $con,
+            $matriculas
+        );
+
+    }else{
+
+        $msg = "Responsável não encontrado!";
+    }
+}
 
 ?>
-
-
 
 <!DOCTYPE html>
 
@@ -425,309 +413,99 @@ hr{
 
 <body>
 
+<h2>Exibir Perfil</h2>
 
-
-<h2>Exibir Perfis</h2>
-
-
-
-<?php if($msg!=""){ ?>
-
+<?php if($msg != ""){ ?>
 <div class="msg">
-
-<?=$msg?>
-
+    <?= $msg ?>
 </div>
-
 <?php } ?>
-
-
-
-
-
-<!-- ALUNO -->
-
 
 <div class="card">
 
 
-<h3>Aluno</h3>
-
-
-
-<form method="POST">
-
-
-<input 
-name="matricula"
-placeholder="Matrícula"
-required
->
-
-
-
-<input
-
-type="submit"
-
-name="buscar_aluno"
-
-value="Buscar Aluno"
-
->
-
-
-</form>
-
-
-
-
-<?php if($aluno){ ?>
-
+    <?php if($tipo == "admin" && $admin){ ?>
 
 <div class="result">
 
+    <h3>Administrador</h3>
 
-<b>Nome:</b>
-
-<?=$aluno['nome']?>
-
-<br>
-
-
-<b>Matrícula:</b>
-
-<?=$aluno['matricula']?>
-
-<br>
-
-
-<b>Turma:</b>
-
-<?=$aluno['turma']?>
-
-<br>
-
-
-<b>Série:</b>
-
-<?=$aluno['serie']?>
-
-
+    <b>Login:</b>
+    <?= htmlspecialchars($admin['login']) ?>
 
 </div>
-
 
 <?php } ?>
 
-
-
-</div>
-
-
-
-
-
-<!-- ADMIN -->
-
-
-<div class="card">
-
-
-<h3>Administrador</h3>
-
-
-
-<form method="POST">
-
-
-<input
-
-name="login"
-
-placeholder="Login"
-
-required
-
->
-
-
-<input
-
-type="submit"
-
-name="buscar_admin"
-
-value="Buscar Admin"
-
->
-
-
-</form>
-
-
-
-
-<?php if($admin){ ?>
-
+<?php if($tipo == "aluno" && $aluno){ ?>
 
 <div class="result">
 
+    <h3>Aluno</h3>
 
-<b>Login:</b>
+    <b>Nome:</b>
+    <?= htmlspecialchars($aluno['nome']) ?>
+    <br>
 
-<?=$admin['login']?>
+    <b>Matrícula:</b>
+    <?= htmlspecialchars($aluno['matricula']) ?>
+    <br>
 
+    <b>Turma:</b>
+    <?= htmlspecialchars($aluno['turma']) ?>
+    <br>
+
+    <b>Série:</b>
+    <?= htmlspecialchars($aluno['serie']) ?>
 
 </div>
-
 
 <?php } ?>
 
-
-
-</div>
-
-
-
-
-
-
-
-<!-- RESPONSAVEL -->
-
-
-<div class="card">
-
-
-<h3>Responsável</h3>
-
-
-
-<form method="POST">
-
-
-<input
-
-name="cpf"
-
-placeholder="CPF"
-
-required
-
->
-
-
-<input
-
-type="submit"
-
-name="buscar_responsavel"
-
-value="Buscar Responsável"
-
->
-
-
-</form>
-
-
-
-
-<?php if($responsavel){ ?>
-
+<?php if($tipo == "resp" && $responsavel){ ?>
 
 <div class="result">
 
+    <h3>Responsável</h3>
 
-<b>CPF:</b>
+    <b>CPF:</b>
+    <?= htmlspecialchars($responsavel['cpf']) ?>
+    <br>
 
-<?=$responsavel['cpf']?>
+    <b>Telefone:</b>
+    <?= htmlspecialchars($responsavel['numero']) ?>
+    <br><br>
 
-<br>
+    <b>Alunos vinculados:</b>
 
+    <?php foreach($alunosVinculados as $a){ ?>
 
-<b>Telefone:</b>
+        <hr>
 
-<?=$responsavel['numero']?>
+        <b>Nome:</b>
+        <?= htmlspecialchars($a['nome']) ?>
+        <br>
 
-<br><br>
+        <b>Matrícula:</b>
+        <?= htmlspecialchars($a['matricula']) ?>
+        <br>
 
+        <b>Turma:</b>
+        <?= htmlspecialchars($a['turma']) ?>
+        <br>
 
-<b>Alunos vinculados:</b>
+        <b>Série:</b>
+        <?= htmlspecialchars($a['serie']) ?>
 
-
-<br>
-
-
-
-<?php foreach($alunosVinculados as $a){ ?>
-
-
-<hr>
-
-
-<b>Nome:</b>
-
-<?=$a['nome']?>
-
-
-<br>
-
-
-<b>Matrícula:</b>
-
-<?=$a['matricula']?>
-
-
-<br>
-
-
-<b>Turma:</b>
-
-<?=$a['turma']?>
-
-
-<br>
-
-
-<b>Série:</b>
-
-<?=$a['serie']?>
-
-
-<br>
-
-
-
-<?php } ?>
-
-
+    <?php } ?>
 
 </div>
 
-
 <?php } ?>
-
-
-
-</div>
-
-
-
-
-
-
-<br>
-
 
 <button onclick="window.location.href='../principaladm.php'">
-
-Voltar
-
+    Voltar
 </button>
-
-
 
 </body>
 

@@ -10,20 +10,24 @@ if (!$con) {
 
 $resultado = null;
 
-if (isset($_POST['buscar'])) {
+$resultado = null;
 
-    $matricula = $_POST['matricula'];
+if(isset($_GET['matricula'])){
 
-    $sql = "SELECT 
-                matricula,
-                dia,
-                entrada,
-                saida
-            FROM entrada_saida
-            WHERE matricula = '$matricula'
-            ORDER BY dia DESC";
+    $matricula = $_GET['matricula'];
 
-    $resultado = mysqli_query($con, $sql);
+    $sql = "
+        SELECT matricula,dia,entrada,saida
+        FROM entrada_saida
+        WHERE matricula = ?
+        ORDER BY dia DESC
+    ";
+
+    $stmt = mysqli_prepare($con,$sql);
+    mysqli_stmt_bind_param($stmt,"s",$matricula);
+    mysqli_stmt_execute($stmt);
+
+    $resultado = mysqli_stmt_get_result($stmt);
 }
 ?>
 
@@ -138,14 +142,7 @@ th {
 <h2>Relatório de Entrada e Saída</h2>
 
 <!-- BUSCA ADMIN -->
-<div class="card">
 
-    <form method="POST">
-        <input type="text" name="matricula" placeholder="Digite a matrícula do aluno" required>
-        <input type="submit" name="buscar" value="Buscar Relatório">
-    </form>
-
-</div>
 
 <!-- RESULTADO -->
 <?php if ($resultado && mysqli_num_rows($resultado) > 0) { ?>

@@ -35,8 +35,42 @@ $resultado = mysqli_stmt_get_result($stmt);
 <title>Painel do Aluno</title>
 
 <style>
-body{margin:0;font-family:Arial;background:#f7faf7}
-.home{text-align:center;padding:30px}
+body{
+    margin:0;
+    font-family:Arial;
+    background:#f7faf7;
+}
+
+/* MENU SUPERIOR */
+.navbar{
+    background:#3a5f3a;
+    height:60px;
+    display:flex;
+    align-items:center;
+    padding:0 20px;
+    box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+.btn-voltar{
+    background:#fff;
+    color:#3a5f3a;
+    padding:8px 15px;
+    border-radius:5px;
+    font-weight:bold;
+    text-decoration:none;
+    display:inline-block;
+}
+
+.btn-voltar:hover{
+    background:#e8e8e8;
+}
+
+.home{
+    text-align:center;
+    padding:30px;
+    padding-top:60px;
+}
+
 h1{color:#3a5f3a}
 
 .container{
@@ -102,7 +136,7 @@ th{
 }
 
 @media print{
-.container,.btn,.logout{display:none}
+.container,.btn,.logout,.navbar{display:none}
 }
 </style>
 
@@ -110,11 +144,15 @@ th{
 
 <body>
 
+<!-- MENU SUPERIOR -->
+<div class="navbar">
+    <a href="logout.php" class="btn-voltar"> SAIR</a>
+</div>
+
 <div class="home">
 
 <h1>Painel do Aluno</h1>
 
-<!-- ENTRADA / SAÍDA -->
 <div class="container">
 
 <div class="card">
@@ -147,7 +185,6 @@ th{
 
 <button class="btn" onclick="window.print()">📄 Imprimir PDF</button>
 
-<!-- RELATÓRIO -->
 <table>
 <tr>
 <th>Data</th>
@@ -159,7 +196,6 @@ th{
 <tr>
 <td><?= date("d/m/Y", strtotime($l['dia'])) ?></td>
 <td><?= $l['entrada'] ?></td>
-
 <td>
 <?php
 echo ($l['saida'] == null || $l['saida'] == "")
@@ -172,9 +208,7 @@ echo ($l['saida'] == null || $l['saida'] == "")
 
 </table>
 
-<button class="btn logout" onclick="location.href='logout.php'">
-Sair
-</button>
+
 
 </div>
 

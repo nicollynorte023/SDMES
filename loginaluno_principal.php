@@ -16,9 +16,36 @@ $msg = $_GET["msg"] ?? "";
         background-color: #f7faf7;
     }
 
+    /* MENU SUPERIOR */
+    .navbar {
+        background-color: #3a5f3a;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        padding: 0 20px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .btn-voltar {
+        background-color: white;
+        color: #3a5f3a;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-voltar:hover {
+        background-color: #e8e8e8;
+    }
+
     .home {
         text-align: center;
-        padding-top: 80px;
+        padding-top: 60px;
     }
 
     .home h1 {
@@ -27,7 +54,7 @@ $msg = $_GET["msg"] ?? "";
         margin-bottom: 20px;
     }
 
-    /* 🔴 caixa de erro */
+    /* caixa de erro */
     .erro-box {
         width: 260px;
         margin: 0 auto 20px auto;
@@ -77,10 +104,14 @@ $msg = $_GET["msg"] ?? "";
 
 <body>
 
+<!-- MENU SUPERIOR -->
+<div class="navbar">
+    <a href="logout.php" class="btn-voltar"> SAIR</a>
+</div>
+
 <div class="home">
     <h1>LOGIN</h1>
 
-    <!-- 🔴 MENSAGENS BONITAS -->
     <?php if ($msg == "158") { ?>
         <div class="erro-box">
             Login ou senha inválidos!

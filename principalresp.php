@@ -14,9 +14,7 @@ if (!isset($_SESSION['cpf'])) {
 
 $cpf = $_SESSION['cpf'];
 
-/* =========================
-   LISTA DE ALUNOS DO RESPONSÁVEL
-========================= */
+/* LISTA DE ALUNOS */
 $sqlAlunos = "
     SELECT DISTINCT
         a.matricula,
@@ -34,14 +32,10 @@ mysqli_stmt_execute($stmtAlunos);
 
 $listaAlunos = mysqli_stmt_get_result($stmtAlunos);
 
-/* =========================
-   FILTRO
-========================= */
+/* FILTRO */
 $filtro = $_POST['matricula'] ?? 'geral';
 
-/* =========================
-   CONSULTA PRINCIPAL
-========================= */
+/* CONSULTA */
 if ($filtro == 'geral') {
 
     $sql = "
@@ -104,6 +98,30 @@ body{
     text-align:center;
 }
 
+/* MENU SUPERIOR */
+.navbar{
+    background:#3a5f3a;
+    height:60px;
+    display:flex;
+    align-items:center;
+    padding:0 20px;
+    box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+.btn-voltar{
+    background:#fff;
+    color:#3a5f3a;
+    padding:8px 15px;
+    border-radius:5px;
+    font-weight:bold;
+    text-decoration:none;
+    display:inline-block;
+}
+
+.btn-voltar:hover{
+    background:#e8e8e8;
+}
+
 h2{
     color:#3a5f3a;
     margin-top:20px;
@@ -162,7 +180,7 @@ th{
 }
 
 @media print{
-    form, .btn{
+    form, .btn, .navbar{
         display:none;
     }
 }
@@ -170,6 +188,11 @@ th{
 </head>
 
 <body>
+
+<!-- MENU SUPERIOR -->
+<div class="navbar">
+    <a href="logout.php" class="btn-voltar"> SAIR</a>
+</div>
 
 <h2>Relatório de Entrada e Saída</h2>
 
