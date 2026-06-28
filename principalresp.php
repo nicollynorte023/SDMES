@@ -246,9 +246,6 @@ th{
 
 <?php } ?>
 
-<button class="btn btn-sair" onclick="location.href='logout.php'">
-Sair
-</button>
 
 </body>
 </html>

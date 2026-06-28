@@ -178,7 +178,7 @@
     </p>
 
     <p>
-        Utilize o menu lateral ou selecione um dos perfis abaixo para acessar
+        Utilize o menu lateral para selecionar um dos perfis para acessar
         as funcionalidades disponíveis.
     </p>
 
