@@ -21,7 +21,24 @@
             padding: 0 20px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
+        .senha-box{
+            position:relative;
+        }
 
+        .senha-box input{
+            padding-right:45px;
+        }
+
+        .btn-senha{
+            position:absolute;
+            right:8px;
+            top:50%;
+            transform:translateY(-50%);
+            border:none;
+            background:none;
+            cursor:pointer;
+            font-size:18px;
+        }   
         .btn-voltar {
             background-color: white;
             color: #3a5f3a;
@@ -89,7 +106,21 @@
         }
     </style>
 </head>
+<script>
 
+function mostrarSenha(){
+
+    let senha = document.getElementById("senha");
+
+    if(senha.type === "password"){
+        senha.type = "text";
+    }else{
+        senha.type = "password";
+    }
+
+}
+
+</script>
 <body>
 
     <!-- Menu Superior -->
@@ -113,10 +144,21 @@
                 <input type="text" name="login" required>
             </div>
 
-            <div class="card">
-                Senha:<br>
-                <input type="password" name="senha" required>
+            <div class="card">Senha:<br>
+
+            <div class="senha-box">
+                <input type="password" name="senha" id="senha" required>
+
+                <button
+                    type="button"
+                    class="btn-senha"
+                    onclick="mostrarSenha()"
+                >
+                    👁
+                </button>
             </div>
+
+        </div>
 
             <input type="submit" value="Acessar">
 

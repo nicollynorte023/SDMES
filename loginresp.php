@@ -97,9 +97,41 @@ $msg = $_GET["msg"] ?? "";
     input[type="submit"]:hover {
         background-color: #5c915c;
     }
+    .senha-box{
+        position:relative;
+    }
+
+    .senha-box input{
+        padding-right:45px;
+    }
+
+    .btn-senha{
+        position:absolute;
+        right:8px;
+        top:50%;
+        transform:translateY(-50%);
+        border:none;
+        background:none;
+        cursor:pointer;
+        font-size:18px;
+    }
 </style>
 </head>
+<script>
 
+function mostrarSenha(){
+
+    let senha = document.getElementById("senha");
+
+    if(senha.type === "password"){
+        senha.type = "text";
+    }else{
+        senha.type = "password";
+    }
+
+}
+
+</script>
 <body>
 
 <!-- Menu Superior -->
@@ -131,7 +163,19 @@ $msg = $_GET["msg"] ?? "";
 
         <div class="card">
             Senha:<br>
-            <input type="password" name="senha" required>
+
+            <div class="senha-box">
+                <input type="password" name="senha" id="senha" required>
+
+                <button
+                    type="button"
+                    class="btn-senha"
+                    onclick="mostrarSenha()"
+                >
+                    👁
+                </button>
+            </div>
+
         </div>
 
         <input type="submit" value="Acessar">
