@@ -1,0 +1,283 @@
+/* =========================
+   RESET
+========================= */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial, Helvetica, sans-serif;
+    background:#f7faf7;
+    color:#333;
+}
+
+/* =========================
+   NAVBAR
+========================= */
+
+.navbar{
+    background:#3a5f3a;
+    height:60px;
+    display:flex;
+    align-items:center;
+    padding:0 20px;
+    box-shadow:0 2px 5px rgba(0,0,0,.1);
+}
+
+.btn-voltar{
+    background:#fff;
+    color:#3a5f3a;
+    padding:8px 15px;
+    border-radius:5px;
+    text-decoration:none;
+    font-weight:bold;
+    display:inline-block;
+}
+
+.btn-voltar:hover{
+    background:#e8e8e8;
+}
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar{
+    width:250px;
+    height:100vh;
+    background:#3a5f3a;
+    position:fixed;
+    left:0;
+    top:0;
+    padding-top:25px;
+}
+
+.sidebar h2{
+    color:#fff;
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.sidebar a{
+    display:block;
+    color:#fff;
+    text-decoration:none;
+    padding:15px 20px;
+    transition:.3s;
+}
+
+.sidebar a:hover,
+.sidebar .active{
+    background:#2f4d2f;
+}
+
+/* =========================
+   CONTEÚDO
+========================= */
+
+.content{
+    width:100%;
+    padding:30px;
+}
+
+.content-sidebar{
+    margin-left:250px;
+}
+
+.home{
+    text-align:center;
+    padding:30px;
+}
+
+h1,h2,h3{
+    color:#3a5f3a;
+    margin-bottom:15px;
+}
+
+/* =========================
+   CARDS
+========================= */
+
+.card,
+.mensagem,
+.card-feedback{
+    background:#fff;
+    border:1px solid #dce5dc;
+    border-radius:8px;
+    padding:20px;
+    margin:20px auto;
+    box-shadow:0 2px 8px rgba(0,0,0,.05);
+}
+
+.card{
+    width:350px;
+}
+
+.mensagem{
+    max-width:850px;
+}
+
+.card-feedback{
+    max-width:700px;
+}
+
+/* =========================
+   FORMULÁRIOS
+========================= */
+
+input,
+select,
+textarea{
+    width:100%;
+    padding:10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    margin-top:5px;
+}
+
+label{
+    display:block;
+    margin-top:12px;
+    margin-bottom:5px;
+    font-weight:bold;
+    text-align:left;
+}
+
+textarea{
+    resize:vertical;
+}
+
+.bloqueado{
+    background:#eee;
+}
+
+/* =========================
+   BOTÕES
+========================= */
+
+.btn,
+button,
+input[type="submit"]{
+    background:#6fa96f;
+    color:#fff;
+    border:none;
+    padding:10px 15px;
+    border-radius:6px;
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-block;
+}
+
+.btn:hover,
+button:hover,
+input[type="submit"]:hover{
+    background:#5c915c;
+}
+
+.btn-editar{
+    background:#6fa96f;
+}
+
+.btn-excluir{
+    background:#a96f6f;
+}
+
+.btn-excluir:hover{
+    background:#915c5c;
+}
+
+.btn-exibir{
+    background:#4f6fa9;
+}
+
+.btn-exibir:hover{
+    background:#405b8d;
+}
+
+.btn-entrada{
+    background:#a97f3a;
+}
+
+.btn-entrada:hover{
+    background:#8f6b30;
+}
+
+.btn-cadastrar{
+    background:#3a5f3a;
+}
+
+/* =========================
+   TABELAS
+========================= */
+
+table{
+    width:95%;
+    margin:20px auto;
+    border-collapse:collapse;
+    background:#fff;
+}
+
+th,
+td{
+    border:1px solid #ccc;
+    padding:10px;
+}
+
+th{
+    background:#6fa96f;
+    color:#fff;
+}
+
+.demanda-desc{
+    max-width:400px;
+    word-break:break-word;
+}
+
+/* =========================
+   ALERTAS
+========================= */
+
+.erro{
+    color:red;
+    font-weight:bold;
+    margin:15px 0;
+}
+
+.sucesso{
+    color:green;
+    font-weight:bold;
+    margin:15px 0;
+}
+
+.sem{
+    color:red;
+    margin-top:20px;
+}
+
+.em{
+    color:orange;
+    font-weight:bold;
+}
+
+/* =========================
+   IMPRESSÃO
+========================= */
+
+@media print{
+
+    .navbar,
+    .sidebar,
+    .btn,
+    button,
+    input[type="submit"],
+    .btn-voltar{
+        display:none !important;
+    }
+
+    body{
+        background:white;
+    }
+}

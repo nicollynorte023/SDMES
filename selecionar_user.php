@@ -1,3 +1,4 @@
+```php
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -55,40 +56,89 @@
         .content{
             margin-left:250px;
             width:100%;
+            padding:40px;
         }
 
-        .home{
-            text-align:center;
-            padding-top:80px;
-        }
+        /* MENSAGEM INICIAL */
 
-        .home h1{
-            color:#3a5f3a;
-            font-weight:normal;
-            margin-bottom:40px;
-        }
-
-        .card{
-            background:#fff;
+        .mensagem{
+            background:#ffffff;
+            width:80%;
+            max-width:850px;
+            margin:0 auto;
+            padding:25px;
+            border-radius:10px;
             border:1px solid #dce5dc;
-            border-radius:8px;
-            padding:20px;
-            width:240px;
-            margin:15px auto;
+            box-shadow:0 2px 8px rgba(0,0,0,0.05);
+            text-align:center;
         }
 
-        input[type="button"]{
+        .mensagem h2{
+            color:#3a5f3a;
+            margin-bottom:15px;
+            font-weight:normal;
+        }
+
+        .mensagem p{
+            color:#555;
+            line-height:1.8;
+            margin:12px 0;
+            font-size:15px;
+        }
+
+        /* FORMULÁRIO */
+
+        .card-feedback{
+            background:#fff;
+            width:80%;
+            max-width:700px;
+            margin:0 auto;
+            padding:25px;
+            border-radius:10px;
+            border:1px solid #dce5dc;
+            box-shadow:0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .card-feedback h2{
+            text-align:center;
+            color:#3a5f3a;
+            margin-bottom:20px;
+            font-weight:normal;
+        }
+
+        .card-feedback label{
+            display:block;
+            margin-top:15px;
+            margin-bottom:5px;
+            color:#444;
+        }
+
+        .card-feedback input,
+        .card-feedback textarea{
+            width:100%;
+            padding:10px;
+            border:1px solid #ccc;
+            border-radius:6px;
+            font-size:14px;
+        }
+
+        .card-feedback textarea{
+            resize:vertical;
+        }
+
+        .card-feedback button{
+            width:100%;
+            margin-top:20px;
             background:#6fa96f;
             color:white;
             border:none;
-            padding:10px;
-            width:100%;
+            padding:12px;
             border-radius:6px;
             cursor:pointer;
             font-size:15px;
         }
 
-        input[type="button"]:hover{
+        .card-feedback button:hover{
             background:#5c915c;
         }
 
@@ -96,35 +146,18 @@
             color:red;
             font-weight:bold;
             display:block;
-            margin-top:20px;
             text-align:center;
+            margin-top:20px;
         }
 
-    .mensagem{
-        background:#ffffff;
-        width:70%;
-        max-width:850px;
-        margin:0 auto 35px auto;
-        padding:25px;
-        border-radius:10px;
-        border:1px solid #dce5dc;
-        box-shadow:0 2px 8px rgba(0,0,0,0.05);
-        text-align:center;
-    }
+        .sucesso{
+            color:green;
+            font-weight:bold;
+            display:block;
+            text-align:center;
+            margin-top:20px;
+        }
 
-    .mensagem h2{
-        color:#3a5f3a;
-        margin-bottom:15px;
-        font-weight:normal;
-    }
-
-    .mensagem p{
-        color:#555;
-        line-height:1.8;
-        margin:12px 0;
-        font-size:15px;
-    }               
-        
     </style>
 </head>
 
@@ -136,7 +169,9 @@
 
         <h2>SDMES</h2>
 
-        <a href="selecionar_user.php">🏠 Início</a>
+        <a href="selecionar_user.php">
+            🏠 Início
+        </a>
 
         <a href="loginaluno_principal.php">
             🎓 Aluno
@@ -150,62 +185,129 @@
             ⚙️ Administrador
         </a>
 
+        <a href="#" onclick="mostrarFormulario()">
+            📩 Formulário de Dúvidas
+        </a>
+
     </div>
 
-      
+    <!-- CONTEÚDO -->
 
+    <div class="content">
 
-    <div class="mensagem">
+        <!-- TELA INICIAL -->
 
-    <h2>Bem-vindo ao SDMES</h2>
+        <div id="paginaInicial">
 
-    <p>
-        Seja bem-vindo ao Sistema de Monitoramento Escolar (SDMES).
-        Este sistema foi desenvolvido para proporcionar mais praticidade,
-        organização e segurança no acompanhamento das informações escolares.
-    </p>
+            <div class="mensagem">
 
-    <p>
-        Por meio desta plataforma, alunos, responsáveis e administradores
-        podem acessar funcionalidades específicas para consulta de dados,
-        acompanhamento de registros, comunicação e gerenciamento das atividades
-        acadêmicas e administrativas da instituição.
-    </p>
+                <h2>Bem-vindo ao SDMES</h2>
 
-    <p>
-        Nosso objetivo é facilitar o acesso às informações e tornar os
-        processos mais eficientes para toda a comunidade escolar.
-    </p>
+                <p>
+                    Seja bem-vindo ao Sistema de Monitoramento Escolar (SDMES).
+                    Este sistema foi desenvolvido para proporcionar mais praticidade,
+                    organização e segurança no acompanhamento das informações escolares.
+                </p>
 
-    <p>
-        Utilize o menu lateral para selecionar um dos perfis para acessar
-        as funcionalidades disponíveis.
-    </p>
+                <p>
+                    Por meio desta plataforma, alunos, responsáveis e administradores
+                    podem acessar funcionalidades específicas para consulta de dados,
+                    acompanhamento de registros, comunicação e gerenciamento das atividades
+                    acadêmicas e administrativas da instituição.
+                </p>
 
-    <p>
-        <strong>Estamos felizes em recebê-lo!</strong><br>
-        Como podemos ajudá-lo hoje?
-    </p>
+                <p>
+                    Nosso objetivo é facilitar o acesso às informações e tornar os
+                    processos mais eficientes para toda a comunidade escolar.
+                </p>
 
-</div>
+                <p>
+                    Utilize o menu lateral para selecionar um dos perfis para acessar
+                    as funcionalidades disponíveis.
+                </p>
 
-            <?php
+                <p>
+                    <strong>Estamos felizes em recebê-lo!</strong><br>
+                    Como podemos ajudá-lo hoje?
+                </p>
 
-            $msg = $_GET["msg"] ?? "";
-
-            if($msg == "158"){
-                echo '<span class="erro">Login ou senha inválidos!</span>';
-            }
-
-            if($msg == "368"){
-                echo '<span class="erro">Acesso negado nesta página!</span>';
-            }
-
-            ?>
+            </div>
 
         </div>
 
+        <!-- FORMULÁRIO -->
+
+        <div id="formularioDuvidas" style="display:none;">
+
+            <div class="card-feedback">
+
+                <h2>FORMULÁRIO DE DÚVIDAS</h2>
+
+                <form action="salvar_feedback.php" method="post">
+
+                    <label>Nome</label>
+                    <input type="text" name="nome" required>
+
+                    <label>Descrição da Situação</label>
+                    <textarea
+                        name="descricao"
+                        rows="6"
+                        placeholder="Descreva sua dúvida, sugestão, problema ou melhoria..."
+                        required></textarea>
+
+                    <label>E-mail para Contato</label>
+                    <input type="email" name="email" required>
+
+                    <button type="submit">
+                        Enviar Mensagem
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+        <?php
+
+        $msg = $_GET["msg"] ?? "";
+
+        if($msg == "158"){
+            echo '<span class="erro">Login ou senha inválidos!</span>';
+        }
+
+        if($msg == "368"){
+            echo '<span class="erro">Acesso negado nesta página!</span>';
+        }
+        if($msg == "feedback_ok"){
+            echo '<span class="sucesso">
+                    Mensagem enviada com sucesso!
+                </span>';
+        }
+
+        if($msg == "erro_feedback"){
+            echo '<span class="erro">
+                    Erro ao enviar mensagem.
+                </span>';
+        }
+
+
+        ?>
+
     </div>
+
+    <script>
+
+        function mostrarFormulario(){
+
+            document.getElementById("paginaInicial").style.display = "none";
+
+            document.getElementById("formularioDuvidas").style.display = "block";
+
+        }
+
+    </script>
 
 </body>
 </html>
+```

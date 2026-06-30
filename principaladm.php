@@ -12,6 +12,10 @@ $tipo = $_GET['tipo'] ?? 'aluno';
 $alunos = mysqli_query($con,"SELECT matricula, nome FROM alunos");
 $admins = mysqli_query($con,"SELECT login, senha FROM administrador");
 $responsaveis = mysqli_query($con,"SELECT id, cpf, numero, aluno FROM responsaveis");
+$demandas = mysqli_query(
+    $con,
+    "SELECT * FROM chat ORDER BY data_envio DESC"
+);
 ?>
 
 <!DOCTYPE html>
@@ -77,7 +81,10 @@ th{background:#6fa96f;color:white;}
     <a href="?tipo=aluno" class="<?= $tipo=='aluno'?'active':'' ?>">ALUNO</a>
     <a href="?tipo=admin" class="<?= $tipo=='admin'?'active':'' ?>">ADMINISTRADOR</a>
     <a href="?tipo=resp" class="<?= $tipo=='resp'?'active':'' ?>">RESPONSÁVEL</a>
+    <a href="?tipo=chat" class="<?= $tipo=='chat'?'active':'' ?>">DEMANDAS</a>
     <a href="logout.php" ?>SAIR</a>
+
+
 
 </div>
 
@@ -87,9 +94,14 @@ th{background:#6fa96f;color:white;}
 <h1>PAINEL ADMINISTRATIVO</h1>
 
 <!-- BOTÕES PRINCIPAIS -->
+
+<?php if($tipo != 'chat'){ ?>
+
 <a class="btn cadastrar" href="admin/adicionar_perfil.php?tipo=<?= $tipo ?>">
-+ CADASTRAR
+    + CADASTRAR
 </a>
+
+<?php } ?>
 
 
 <!-- ================= ALUNO ================= -->
@@ -166,43 +178,138 @@ Excluir
 <?php } ?>
 
 <!-- ================= RESPONSÁVEL ================= -->
-<?php if($tipo=='resp'){ ?>
-<table>
-<tr><th>ID</th><th>CPF</th><th>Telefone</th><th>Aluno</th><th>Ações</th></tr>
 
-<?php while($r=mysqli_fetch_assoc($responsaveis)){
-$id = $r['id'] ?? '';
-$cpf = $r['cpf'] ?? '';
-$num = $r['numero'] ?? '';
-$aluno = $r['aluno'] ?? '';
-?>
+<?php if($tipo=='resp'){ ?>
+
+<table>
+
 <tr>
-<td><?= $id ?></td>
-<td><?= $cpf ?></td>
-<td><?= $num ?></td>
-<td><?= $aluno ?></td>
+    <th>ID</th>
+    <th>CPF</th>
+    <th>Telefone</th>
+    <th>Aluno</th>
+    <th>Ações</th>
+</tr>
+
+<?php while($r=mysqli_fetch_assoc($responsaveis)){ ?>
+
+<tr>
+
+    <td><?= $r['id'] ?></td>
+    <td><?= $r['cpf'] ?></td>
+    <td><?= $r['numero'] ?></td>
+    <td><?= $r['aluno'] ?></td>
+
+    <td>
+
+        <a class="btn exibir"
+        href="admin/exibir_perfil.php?tipo=resp&id=<?= $r['id'] ?>">
+            Exibir
+        </a>
+
+        <a class="btn editar"
+        href="admin/alterar_perfil.php?tipo=resp&id=<?= $r['id'] ?>">
+            Editar
+        </a>
+
+        <a class="btn excluir"
+        href="admin/excluir_perfil.php?tipo=resp&chave=<?= $r['id'] ?>"
+        onclick="return confirm('Deseja excluir este responsável?')">
+            Excluir
+        </a>
+
+    </td>
+
+</tr>
+
+<?php } ?>
+
+</table>
+
+<?php } ?>
+
+<!-- ================= DEMANDAS ================= -->
+
+<?php if($tipo=='chat'){ ?>
+
+<table>
+
+<tr>
+    <th>ID</th>
+    <th>Nome</th>
+    <th>Descrição</th>
+    <th>Email</th>
+    <th>Data Envio</th>
+    <th>Status</th>
+    <th>Ação</th>
+</tr>
+
+<?php while($d=mysqli_fetch_assoc($demandas)){ ?>
+
+<tr>
+
+    <td><?= $d['id'] ?></td>
+
+    <td><?= htmlspecialchars($d['nome']) ?></td>
+
+    <td class="demanda-desc">
+        <?= nl2br(htmlspecialchars($d['descricao'])) ?>
+    </td>
+
+    <td><?= htmlspecialchars($d['email']) ?></td>
+
+    <td><?= $d['data_envio'] ?></td>
 <td>
 
-<a class="btn exibir"
-href="admin/exibir_perfil.php?tipo=resp&id=<?= $r['id'] ?>">
-Exibir
-</a>
+    <?php if($d['status_demanda'] == 'Concluída'){ ?>
 
-<a class="btn editar"
-href="admin/alterar_perfil.php?tipo=resp&id=<?= $r['id'] ?>">
-Editar
-</a>
+        ✅ Concluída
 
-<a class="btn excluir"
-href="admin/excluir_perfil.php?tipo=resp&chave=<?= $r['id'] ?>"
-onclick="return confirm('Deseja excluir este responsável?')">
-Excluir
-</a>
+    <?php }else{ ?>
+
+        🟡 Em Andamento
+
+    <?php } ?>
+
+</td>
+
+<td>
+
+    <?php if($d['status_demanda'] != 'Concluída'){ ?>
+
+        <form
+            action="admin/concluir_demanda.php"
+            method="post"
+        >
+
+            <input
+                type="hidden"
+                name="id"
+                value="<?= $d['id'] ?>"
+            >
+
+            <button
+                type="submit"
+                class="btn editar"
+            >
+                Concluir
+            </button>
+
+        </form>
+
+    <?php }else{ ?>
+
+        —
+
+    <?php } ?>
 
 </td>
 </tr>
+
 <?php } ?>
+
 </table>
+
 <?php } ?>
 
 </div>
