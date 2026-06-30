@@ -93,7 +93,9 @@ $msg = $_GET["msg"] ?? "";
         width: 240px;
         border-radius: 6px;
     }
-
+    .btn-voltar{
+        text-decoration: none;
+    }
     input[type="submit"]:hover {
         background-color: #5c915c;
     }
